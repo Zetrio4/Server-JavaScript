@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do CRUD</title>
+
+    <!-- Стилі оформлення сторінки -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header, footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1em;
+        }
+
+        main {
+            flex: 1;
+            padding: 1em;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        form {
+            display: flex;
+            gap: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        input, button {
+            padding: 0.5em;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #ccc;
+            margin: 0.5em 0;
+            padding: 0.5em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .actions button {
+            margin-left: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Верхня панель -->
+    <header>
+        <h1>Список завдань (CRUD)</h1>
+    </header>
+
+    <!-- Основний контент сторінки -->
+    <main>
+
+        <!-- Форма додавання нового завдання -->
+        <form id="addForm">
+            <input type="text" id="itemInput" placeholder="Введіть нове завдання" required>
+            <button type="submit">Додати</button>
+        </form>
+
+        <!-- Список завдань -->
+        <ul id="itemsList"></ul>
+
+    </main>
+
+    <!-- Нижня частина сторінки -->
+    <footer>
+        <p>© 2025 To-Do CRUD</p>
+    </footer>
+
+    <!-- Логіка CRUD (Create-Read-Update-Delete) -->
+    <script>
+        const API = "http://localhost:3000/api/items";
+        const list = document.getElementById('itemsList');
+        const form = document.getElementById('addForm');
+        const input = document.getElementById('itemInput');
+
+        // ----- READ: завантаження всіх записів -----
+        async function loadItems() {
+            list.innerHTML = "";
+            const res = await fetch(API);
+            const items = await res.json();
+            items.forEach(item => addItemToDOM(item));
+        }
+
+        // ----- Додавання елемента в DOM -----
+        function addItemToDOM(item) {
+            const li = document.createElement('li');
+
+            li.innerHTML = `
+                <span contenteditable="true"
+                      onblur="updateItem(${item.id}, this.innerText)">
+                      ${item.text || ''}
+                </span>
+
+                <div class="actions">
+                    <button onclick="deleteItem(${item.id})">Видалити</button>
+                </div>
+            `;
+
+            list.appendChild(li);
+        }
+
+        // ----- CREATE: додавання нового запису -----
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            const res = await fetch(API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+
+            const newItem = await res.json();
+            addItemToDOM(newItem);
+            input.value = "";
+        });
+
+        // ----- UPDATE: редагування тексту -----
+        async function updateItem(id, text) {
+            await fetch(`${API}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+        }
+
+        // ----- DELETE: видалення запису -----
+        async function deleteItem(id) {
+            await fetch(`${API}/${id}`, { method: "DELETE" });
+            loadItems();
+        }
+
+        // Завантажуємо список при старті
+        loadItems();
+    </script>
+
+</body>
+</html>
