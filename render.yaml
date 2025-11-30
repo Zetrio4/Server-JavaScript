@@ -1,0 +1,16 @@
+services:
+  - name: laba-1
+    type: web
+    rootDir: backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    autoDeploy: true
+    plan: free
+
+  - name: laba-2
+    type: web
+    rootDir: frontend
+    env: docker
+    dockerfilePath: ./frontend/Dockerfile
+    autoDeploy: true
+    plan: free
