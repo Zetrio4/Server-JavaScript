@@ -6,7 +6,7 @@ const port = 3000;
 
 // ==== Middleware ====
 app.use(cors({
-    origin: 'http://localhost:4000'
+    origin: 'https://server-javascript-2.onrender.com'
 }));
 app.use(express.json());
 
